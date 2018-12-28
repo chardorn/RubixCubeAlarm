@@ -1,61 +1,66 @@
+import tkinter as tk
+import threading
 import os
 import subprocess
 from gpiozero import LED
 import time
 from time import sleep
-import threading
 
-def blinkLED():
-    whlie alarming == True:
-        led.on()
-        time.sleep(0.2)
-        led.off()
-        time.sleep(0.2)
-    
-def checkCube():
-    while alarming == True:
-        print("Checking cube...")
-        result = subprocess.Popen("python -m scripts.label_image --image=test.jpg", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True)
-        out, err = result.communicate()
-        newString = out[36:44]
-        compare = str(newString, "utf-8")
-        if compare == "solved (":
-            alarming = False
-            print("DONE!!!!")
-        
-def takePicture():
-    while alarming == True:
-        print("Taking picture...")
-        os.system("sudo fswebcam -s 2 --no-banner --save test.jpg")
-
-#Set up needed variables
 led = LED(17)
-alarmTime = "2056"
-timeForAlarm = False
-led.on()
-alarming = True
 
-#Test alarm portion
-#TODO: change so it actually functions
-while timeForAlarm == True:
-    currentTime = time.strftime("%H%M")
-    if currentTime == alarmTime:
-        timeForAlarm = True
+root = tk.Tk()
+root.configure(background='skyblue')
 
-#Change test.jpeg to an unsolved picture
-os.system("source ./venv/bin/activate")
-os.system("convert unsolvedPic test.jpg")
+alarm = "1234"
+alarmTime_ = tk.Label(root, text = "Alarm: " + alarm[0:2] + ":" + alarm[2:4], bg='skyblue', font=('times',18))
 
-t1 = threading.Thread(target=blinkLED)
-t2 = threading.Thread(target=checkCube)
-t3 = threading.Thread(target=takePicture)
+entry = tk.Entry(root)
+entry.grid(column=0,row=3)
 
-t1.start()
-t2.start()
-t3.start()
+def tm(event=None):
+    time_ = tk.Label(root)
+    time_ .config(text='{}'.format(time.asctime()))
+    time_.config(bg='skyblue', font=('times',50))
+    time_.grid(column=0,row=0, padx=5, pady=5)
+    root.after(1000,thread)
 
-t1.join()
-t2.join()
-t3.join()
-led.off()
-print("DONE!")
+def alarmTime(event=None):
+    alarmTime_.grid(column=0,row=1, padx=5, pady=5)
+    root.after(1000,thread)
+
+def resetAlarm(event=None):
+    alarm = entry.get()
+    alarmTime_ .config(text = "Alarm:" + alarm[0:2] + ":" + alarm[2:4])
+
+def thread(event=None):
+    t = threading.Thread(target=tm)
+    t.start()
+
+def quit(event=None):
+    root.destroy()
+
+
+tm()
+alarmTime()
+
+reset_btn = tk.Button(root, text='Reset Alarm', command=resetAlarm)
+reset_btn.config(relief='ridge')
+reset_btn.grid(row=2, column=0, padx=5, pady=5, ipadx=5, ipady=5)
+reset_btn.bind('<Return>', resetAlarm)
+
+#qt_btn = tk.Button(root, text='quit', command=quit)
+#qt_btn.config(relief='ridge')
+#qt_btn.grid(row=1, column=2, padx=5, pady=5, ipadx=5, ipady=5)
+#qt_btn.bind('<Return>', quit)
+
+root.mainloop()
+while True: #TO DO: change to while truw
+    led.on()
+    print("on")
+    time.sleep(0.2)
+    led.off()
+    print("off")
+    time.sleep(0.2)
+
+#root.after(1000,thread)
+
