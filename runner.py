@@ -11,8 +11,28 @@ led = LED(17)
 root = tk.Tk()
 root.configure(background='skyblue')
 
-alarmTime = "1234"
-alarm_ = tk.Label(root, text = "Alarm: " + alarmTime[0:2] + ":" + alarmTime[2:4], bg='skyblue', font=('times',18))
+alarmTime = "0000"
+alarming = False
+
+def setAlarmTime(newTime):
+    global alarmTime
+    alarmTime = newTime
+    
+def getAlarmTime():
+    global alarmTime
+    return alarmTime
+
+def setAlarming(value):
+    global alarming
+    alarming = value
+
+def getAlarming():
+    global alarming
+    return alarming
+
+setAlarmTime("0000")
+
+alarm_ = tk.Label(root, text = "Alarm: " + getAlarmTime()[0:2] + ":" + getAlarmTime()[2:4], bg='skyblue', font=('times',18))
 
 entry = tk.Entry(root)
 entry.grid(column=0,row=3)
@@ -29,8 +49,8 @@ def alarm(event=None):
     root.after(1000,thread)
 
 def resetAlarm(event=None):
-    alarmTime = entry.get()
-    alarm_ .config(text = "Alarm: " + alarmTime[0:2] + ":" + alarmTime[2:4])
+    setAlarmTime(entry.get())
+    alarm_ .config(text = "Alarm: " + getAlarmTime()[0:2] + ":" + getAlarmTime()[2:4])
 
 def thread(event=None):
     t = threading.Thread(target=tm)
@@ -39,30 +59,48 @@ def thread(event=None):
 def quit(event=None):
     root.destroy()
     
-def blink(event=None):
-    alarming = False
+def checkTime(event=None):
     while True:
+        setAlarming(False)
         currentTime = time.strftime("%H%M")
         print("Current time: " + currentTime)
-        print("Alarm time: " + alarmTime)
-        if currentTime == alarmTime:
-            alarming = True
-            timeForAlarm = True
+        print("Alarm time: " + getAlarmTime())
+        if currentTime == getAlarmTime():
+            setAlarming(True)
+            t1.start()
+            t2.start()
+            t3.start()
+            t3.join()
+            t1.join()
+            t2.join()
+            
         time.sleep(1)
-        while alarming == True:
-            led.on()
-            time.sleep(0.2)
-            led.off()
-            time.sleep(0.2)
+        
+    
+def blink(event=None):
+    while getAlarming() == True:
+        led.on()
+        time.sleep(0.2)
+        led.off()
+        time.sleep(0.2)
         
 def takePicture():
-    while alarming == True: #TO DO: change to while alarming = True
+    while getAlarming() == True:
         print("Taking picture...")
         os.system("sudo fswebcam -s 2 --no-banner --save test.jpg")
-        #result = subprocess.Popen("sudo fswebcam -s 2 --no-banner --save test.jpg", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True)
-        #out, err = result.communicate()
         time.sleep(3)
-        #os.system("sudo ~/Downloads/usbreset /dev/bus/usb/001/024")
+        
+def checkSolved():
+    print("Checking cube...")
+    result = subprocess.Popen("python -m scripts.label_image --image=test.jpg", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True)
+    out, err = result.communicate()
+    newString = out[36:44]
+    compare = str(newString, "utf-8")
+    print(compare)
+    if compare == "solved (":
+        setAlarming(False)
+        print("DONE!!!!")
+    
     
 
 reset_btn = tk.Button(root, text='Reset Alarm', command=resetAlarm)
@@ -73,19 +111,12 @@ reset_btn.bind('<Return>', resetAlarm)
 tm()
 alarm()
 
+main = threading.Thread(target=checkTime)
 t1 = threading.Thread(target=blink)
-t1.start()
+t2 = threading.Thread(target=takePicture)
+t3 = threading.Thread(target=checkSolved)
+
+main.start()
 
 root.mainloop()
 root.after(1000,thread)
-
-
-
-#QUIT BUTTON
-#qt_btn = tk.Button(root, text='quit', command=quit)
-#qt_btn.config(relief='ridge')
-#qt_btn.grid(row=1, column=2, padx=5, pady=5, ipadx=5, ipady=5)
-#qt_btn.bind('<Return>', quit)
-
-
-
