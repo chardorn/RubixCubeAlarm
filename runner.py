@@ -6,7 +6,7 @@ from time import sleep
 import threading
 
 def blinkLED():
-    whlie alarming == True:
+    while alarming == True:
         led.on()
         time.sleep(0.2)
         led.off()
