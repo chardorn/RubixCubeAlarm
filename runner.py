@@ -33,7 +33,7 @@ led = LED(17)
 alarmTime = "2056"
 timeForAlarm = False
 led.on()
-alarming = True
+global alarming = True
 
 #Test alarm portion
 #TODO: change so it actually functions
