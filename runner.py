@@ -15,7 +15,7 @@ def blinkLED():
 def checkCube():
     while alarming == True:
         print("Checking cube...")
-        result = subprocess.Popen("python -m scripts.label_image --image=test.jpg", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True)
+        result = subprocess.Popen("python /home/pi/RubixCubeAlarm/tensorflow-for-poets-2/scripts/label_image --image=test.jpg", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True)
         out, err = result.communicate()
         newString = out[36:44]
         compare = str(newString, "utf-8")
@@ -43,8 +43,8 @@ while timeForAlarm == True:
         timeForAlarm = True
 
 #Change test.jpeg to an unsolved picture
-os.system("source ./venv/bin/activate")
-os.system("convert unsolvedPic test.jpg")
+#os.system("source ./venv/bin/activate")
+#os.system("convert unsolvedPic test.jpg")
 
 t1 = threading.Thread(target=blinkLED)
 t2 = threading.Thread(target=checkCube)
